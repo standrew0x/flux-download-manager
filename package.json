@@ -1,0 +1,16 @@
+{
+  "name": "flux-download-manager",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A local-first desktop download manager powered by Node.js.",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js --open",
+    "dev": "node --watch server.js",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}

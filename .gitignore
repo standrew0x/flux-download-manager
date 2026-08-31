@@ -1,0 +1,27 @@
+# Node and local tooling
+node_modules/
+npm-debug.log*
+*.log
+.env
+.env.*
+!.env.example
+
+# Flux runtime and transfer data
+.test-state/
+.test-downloads/
+.capture-test-state/
+*.part
+*.tmp
+*.flux-*.tmp
+
+# Python prototype caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Editor and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini

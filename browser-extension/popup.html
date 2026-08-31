@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Flux Capture</title><link rel="stylesheet" href="popup.css"></head>
+<body>
+  <main>
+    <header><span class="logo">ϟ</span><div><strong>Flux Capture</strong><small id="browserName">Browser integration</small></div><span class="status" id="statusDot"></span></header>
+    <section class="hero"><span>Capture rule</span><strong>Files over <b id="thresholdLabel">6 GB</b></strong><p>Smaller downloads stay in your browser.</p></section>
+    <label class="switch-row"><span><strong>Automatic takeover</strong><small>Send eligible downloads to Flux</small></span><input id="enabled" type="checkbox"><i></i></label>
+    <label class="field"><span>Minimum file size</span><div><input id="threshold" type="number" min="6" max="1000" step="0.1"><b>GB</b></div></label>
+    <div class="service"><span id="serviceLight"></span><div><strong id="serviceTitle">Checking Flux…</strong><small id="serviceCopy">Local service at 127.0.0.1</small></div></div>
+    <p class="last" id="lastCapture">No downloads captured yet.</p>
+    <button id="openFlux" type="button">Open Flux</button>
+  </main>
+  <script src="popup.js"></script>
+</body>
+</html>

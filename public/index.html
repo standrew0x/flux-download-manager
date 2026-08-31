@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0a0c0d">
+  <meta name="color-scheme" content="dark light">
+  <meta name="description" content="Flux is a fast, resilient local download manager.">
+  <title>Flux — Download Manager</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body data-theme="dark">
+  <svg class="svg-sprite" aria-hidden="true">
+    <symbol id="icon-logo" viewBox="0 0 24 24"><path d="M13.8 2 5 13h6.4L10.2 22 19 10h-6.4L13.8 2Z" fill="currentColor"/></symbol>
+    <symbol id="icon-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="icon-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></symbol>
+    <symbol id="icon-download" viewBox="0 0 24 24"><path d="M12 3v12m0 0 5-5m-5 5-5-5M5 20h14"/></symbol>
+    <symbol id="icon-activity" viewBox="0 0 24 24"><path d="M3 12h4l2.2-6 4 12 2.3-6H21"/></symbol>
+    <symbol id="icon-gauge" viewBox="0 0 24 24"><path d="M4.8 18a9 9 0 1 1 14.4 0M12 13l4-4"/><circle cx="12" cy="13" r="1.5" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="icon-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+    <symbol id="icon-check-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8 12 2.7 2.7L16.5 9"/></symbol>
+    <symbol id="icon-queue" viewBox="0 0 24 24"><path d="M4 6h12M4 12h10M4 18h8"/><path d="m17 15 3 3-3 3"/></symbol>
+    <symbol id="icon-pause" viewBox="0 0 24 24"><path d="M9 7v10M15 7v10"/></symbol>
+    <symbol id="icon-play" viewBox="0 0 24 24"><path d="m9 6 9 6-9 6V6Z"/></symbol>
+    <symbol id="icon-refresh" viewBox="0 0 24 24"><path d="M19 8a8 8 0 1 0 1 7M19 4v4h-4"/></symbol>
+    <symbol id="icon-folder" viewBox="0 0 24 24"><path d="M3.5 6.5h6l2 2h9v10h-17v-12Z"/></symbol>
+    <symbol id="icon-file" viewBox="0 0 24 24"><path d="M7 3.5h7l4 4v13H7v-17Z"/><path d="M14 3.5v4h4"/></symbol>
+    <symbol id="icon-video" viewBox="0 0 24 24"><rect x="3.5" y="5" width="13" height="14" rx="2"/><path d="m16.5 10 4-2v8l-4-2"/></symbol>
+    <symbol id="icon-image" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m5 18 5-5 3 3 2-2 4 4"/></symbol>
+    <symbol id="icon-archive" viewBox="0 0 24 24"><path d="M4 7h16v13H4V7Zm-1-3h18v3H3V4Zm7 8h4"/></symbol>
+    <symbol id="icon-document" viewBox="0 0 24 24"><path d="M7 3.5h7l4 4v13H7v-17Z"/><path d="M14 3.5v4h4M10 12h5m-5 4h5"/></symbol>
+    <symbol id="icon-trash" viewBox="0 0 24 24"><path d="M5 7h14M9 7V4h6v3m2 0-1 13H8L7 7m3 4v5m4-5v5"/></symbol>
+    <symbol id="icon-more" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.3" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.3" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.3" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="icon-chevron" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></symbol>
+    <symbol id="icon-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19 13.5v-3l-2.3-.7a7.3 7.3 0 0 0-.8-1.8L17 5.8l-2.1-2.1-2.2 1.1a7 7 0 0 0-1.9 0L8.6 3.7 6.5 5.8 7.6 8a7.3 7.3 0 0 0-.8 1.8l-2.3.7v3l2.3.7a7.3 7.3 0 0 0 .8 1.8l-1.1 2.2 2.1 2.1 2.2-1.1a7 7 0 0 0 1.9 0l2.2 1.1 2.1-2.1-1.1-2.2a7.3 7.3 0 0 0 .8-1.8l2.3-.7Z"/></symbol>
+    <symbol id="icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4"/></symbol>
+    <symbol id="icon-moon" viewBox="0 0 24 24"><path d="M20 15.7A8.5 8.5 0 0 1 8.3 4 8.5 8.5 0 1 0 20 15.7Z"/></symbol>
+    <symbol id="icon-x" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></symbol>
+    <symbol id="icon-link" viewBox="0 0 24 24"><path d="m10 14 4-4M8.5 16.5l-2 2a3.5 3.5 0 1 1-5-5l4-4a3.5 3.5 0 0 1 5 0m5-2 2-2a3.5 3.5 0 1 1 5 5l-4 4a3.5 3.5 0 0 1-5 0"/></symbol>
+    <symbol id="icon-copy" viewBox="0 0 24 24"><rect x="8" y="8" width="11" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h2"/></symbol>
+    <symbol id="icon-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+    <symbol id="icon-bell" viewBox="0 0 24 24"><path d="M6 16h12l-1.5-2.5V10a4.5 4.5 0 0 0-9 0v3.5L6 16Zm4 3h4"/></symbol>
+    <symbol id="icon-shield" viewBox="0 0 24 24"><path d="M12 3 5 6v5c0 4.6 2.8 7.8 7 10 4.2-2.2 7-5.4 7-10V6l-7-3Z"/><path d="m9 12 2 2 4-4"/></symbol>
+    <symbol id="icon-wifi" viewBox="0 0 24 24"><path d="M4 9a12 12 0 0 1 16 0M7 12.5a7.5 7.5 0 0 1 10 0M10 16a3 3 0 0 1 4 0"/><circle cx="12" cy="19" r="1" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="icon-power" viewBox="0 0 24 24"><path d="M12 3v9m5.7-6.1a9 9 0 1 1-11.4 0"/></symbol>
+    <symbol id="icon-keyboard" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M7 10h.01M11 10h.01M15 10h.01M18 10h.01M7 14h10"/></symbol>
+    <symbol id="icon-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7h.01"/></symbol>
+    <symbol id="icon-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+    <symbol id="icon-external" viewBox="0 0 24 24"><path d="M14 5h5v5M19 5l-8 8"/><path d="M18 13v6H5V6h6"/></symbol>
+  </svg>
+
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar" aria-label="Download filters">
+      <div class="brand-row">
+        <span class="brand-mark"><svg><use href="#icon-logo"></use></svg></span>
+        <span class="brand-copy"><strong>Flux</strong><small>Download Manager</small></span>
+      </div>
+
+      <nav class="nav-groups" aria-label="Downloads">
+        <p class="nav-eyebrow">Library</p>
+        <button class="nav-item is-active" type="button" data-filter="all" aria-current="page">
+          <svg><use href="#icon-download"></use></svg><span>All downloads</span><b id="countAll">0</b>
+        </button>
+        <button class="nav-item" type="button" data-filter="active">
+          <svg><use href="#icon-activity"></use></svg><span>Active</span><b id="countActive">0</b>
+        </button>
+        <button class="nav-item" type="button" data-filter="queued">
+          <svg><use href="#icon-queue"></use></svg><span>Queued</span><b id="countQueued">0</b>
+        </button>
+        <button class="nav-item" type="button" data-filter="paused">
+          <svg><use href="#icon-pause"></use></svg><span>Paused</span><b id="countPaused">0</b>
+        </button>
+        <button class="nav-item" type="button" data-filter="complete">
+          <svg><use href="#icon-check-circle"></use></svg><span>Completed</span><b id="countComplete">0</b>
+        </button>
+        <button class="nav-item" type="button" data-filter="failed">
+          <svg><use href="#icon-info"></use></svg><span>Needs attention</span><b id="countFailed">0</b>
+        </button>
+
+        <p class="nav-eyebrow category-label">Categories</p>
+        <button class="nav-item category-item" type="button" data-category="video">
+          <svg><use href="#icon-video"></use></svg><span>Video</span><b id="countVideo">0</b>
+        </button>
+        <button class="nav-item category-item" type="button" data-category="documents">
+          <svg><use href="#icon-document"></use></svg><span>Documents</span><b id="countDocuments">0</b>
+        </button>
+        <button class="nav-item category-item" type="button" data-category="archives">
+          <svg><use href="#icon-archive"></use></svg><span>Archives</span><b id="countArchives">0</b>
+        </button>
+        <button class="nav-item category-item" type="button" data-category="other">
+          <svg><use href="#icon-file"></use></svg><span>Other</span><b id="countOther">0</b>
+        </button>
+      </nav>
+
+      <div class="sidebar-spacer"></div>
+      <section class="engine-card" aria-label="Download engine status">
+        <div class="engine-status"><span class="live-dot"></span><strong>Local engine</strong><span id="engineState">Online</span></div>
+        <div class="engine-meter"><span id="engineMeter"></span></div>
+        <div class="engine-meta"><span id="engineActive">0 active</span><span id="engineSpeed">0 B/s</span></div>
+      </section>
+      <div class="sidebar-actions">
+        <button class="sidebar-action" id="settingsButton" type="button"><svg><use href="#icon-settings"></use></svg><span>Settings</span></button>
+        <button class="sidebar-action danger-quiet" id="shutdownButton" type="button"><svg><use href="#icon-power"></use></svg><span>Exit Flux</span></button>
+      </div>
+    </aside>
+
+    <main class="main-content" id="mainContent">
+      <header class="topbar">
+        <button class="icon-button sidebar-toggle" id="sidebarToggle" type="button" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar"><svg><use href="#icon-menu"></use></svg></button>
+        <label class="search-box" for="globalSearch">
+          <svg><use href="#icon-search"></use></svg>
+          <input id="globalSearch" type="search" placeholder="Search downloads, URLs, folders…" autocomplete="off">
+          <kbd>Ctrl K</kbd>
+        </label>
+        <div class="topbar-actions">
+          <span class="connection-badge" id="connectionBadge"><span></span><b>Live</b></span>
+          <button class="icon-button" id="shortcutButton" type="button" aria-label="Keyboard shortcuts" title="Keyboard shortcuts"><svg><use href="#icon-keyboard"></use></svg></button>
+          <button class="icon-button" id="themeButton" type="button" aria-label="Switch to light theme" title="Toggle theme"><svg><use href="#icon-sun"></use></svg></button>
+          <button class="primary-button" id="addDownloadButton" type="button" aria-keyshortcuts="Control+N Meta+N"><svg><use href="#icon-plus"></use></svg><span>Add download</span><kbd>Ctrl N</kbd></button>
+        </div>
+      </header>
+
+      <div class="workspace">
+        <section class="page-heading" aria-labelledby="pageTitle">
+          <div>
+            <p class="eyebrow">Transfer center</p>
+            <h1 id="pageTitle">Your downloads</h1>
+            <p id="pageSubtitle">Everything flowing through Flux, in one place.</p>
+          </div>
+          <button class="quiet-button" id="refreshButton" type="button"><svg><use href="#icon-refresh"></use></svg><span>Refresh</span></button>
+        </section>
+
+        <section class="summary-grid" aria-label="Download summary">
+          <article class="summary-card accent-card">
+            <div class="summary-icon"><svg><use href="#icon-activity"></use></svg></div>
+            <div><span>Active now</span><strong id="summaryActive">0</strong><small id="summaryActiveHint">No transfers running</small></div>
+          </article>
+          <article class="summary-card cyan-card">
+            <div class="summary-icon"><svg><use href="#icon-gauge"></use></svg></div>
+            <div><span>Transfer speed</span><strong id="summarySpeed">0 B/s</strong><small id="summarySpeedHint">Across all downloads</small></div>
+          </article>
+          <article class="summary-card">
+            <div class="summary-icon"><svg><use href="#icon-download"></use></svg></div>
+            <div><span>Data received</span><strong id="summaryReceived">0 B</strong><small>Current library</small></div>
+          </article>
+          <article class="summary-card">
+            <div class="summary-icon"><svg><use href="#icon-check"></use></svg></div>
+            <div><span>Completed</span><strong id="summaryComplete">0</strong><small id="summaryCompleteHint">Ready to open</small></div>
+          </article>
+        </section>
+
+        <section class="queue-panel" aria-labelledby="queueTitle">
+          <div class="queue-toolbar">
+            <div>
+              <div class="queue-title-row"><h2 id="queueTitle">All downloads</h2><span id="visibleCount">0 items</span></div>
+              <p id="queueDescription">Most recent downloads appear first.</p>
+            </div>
+            <div class="queue-controls">
+              <label class="select-control" for="sortSelect"><span>Sort</span><select id="sortSelect"><option value="recent">Most recent</option><option value="name">Name</option><option value="progress">Progress</option><option value="speed">Speed</option><option value="status">Status</option></select></label>
+              <button class="icon-button" id="clearSearchButton" type="button" aria-label="Clear filters" title="Clear filters"><svg><use href="#icon-x"></use></svg></button>
+            </div>
+          </div>
+          <div class="list-heading" aria-hidden="true"><span>Download</span><span>Status</span><span>Transfer</span><span>Actions</span></div>
+          <div class="download-list" id="downloadList" role="list" aria-label="Downloads"></div>
+          <div class="state-panel" id="statePanel" hidden>
+            <div class="empty-orb"><svg><use href="#icon-download"></use></svg></div>
+            <h3 id="stateTitle">Your queue is clear</h3>
+            <p id="stateMessage">Add a link and Flux will handle the rest—parallel connections, retries, and resume included.</p>
+            <button class="primary-button" id="stateAction" type="button"><svg><use href="#icon-plus"></use></svg><span>Add your first download</span></button>
+          </div>
+          <div class="loading-list" id="loadingList" aria-label="Loading downloads">
+            <div class="skeleton-row"></div><div class="skeleton-row"></div><div class="skeleton-row"></div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <div class="drawer-scrim" id="drawerScrim" hidden></div>
+  <aside class="details-drawer" id="detailsDrawer" aria-labelledby="detailsTitle" aria-hidden="true">
+    <header class="drawer-header">
+      <div><p class="eyebrow">Download details</p><h2 id="detailsTitle">Download</h2></div>
+      <button class="icon-button" id="closeDetailsButton" type="button" aria-label="Close details"><svg><use href="#icon-x"></use></svg></button>
+    </header>
+    <div class="drawer-content" id="detailsContent"></div>
+  </aside>
+
+  <dialog class="modal wide-modal" id="addDialog" aria-labelledby="addDialogTitle">
+    <form id="addForm" novalidate>
+      <header class="modal-header">
+        <div class="modal-title-block"><span class="modal-icon"><svg><use href="#icon-plus"></use></svg></span><div><p class="eyebrow">New transfer</p><h2 id="addDialogTitle">Add a download</h2><p>Paste a direct HTTP or HTTPS link. Flux will inspect it before transfer.</p></div></div>
+        <button class="icon-button modal-close" type="button" data-close-dialog="addDialog" aria-label="Close"><svg><use href="#icon-x"></use></svg></button>
+      </header>
+      <div class="modal-body form-grid">
+        <label class="field full-span"><span>Download URL <b aria-hidden="true">*</b></span><div class="input-with-icon"><svg><use href="#icon-link"></use></svg><input id="downloadUrl" name="url" type="url" inputmode="url" placeholder="https://example.com/file.zip" required autocomplete="url"></div><small>Direct file links work best. Redirects are followed safely.</small></label>
+        <label class="field destination-field"><span>Destination folder <b aria-hidden="true">*</b></span><div class="joined-input"><input id="downloadDestination" name="destination" type="text" placeholder="Downloads" required><button id="pickFolderButton" class="quiet-button" type="button"><svg><use href="#icon-folder"></use></svg><span>Choose</span></button></div></label>
+        <label class="field"><span>Filename <em>optional</em></span><input id="downloadFilename" name="filename" type="text" placeholder="Use the server filename"></label>
+        <label class="field"><span>Connections</span><select id="downloadConnections" name="connections"><option>1</option><option>2</option><option selected>4</option><option>8</option><option>16</option></select><small>More connections can improve large-file speed.</small></label>
+        <label class="field"><span>Priority</span><select id="downloadPriority" name="priority"><option value="low">Low</option><option value="normal" selected>Normal</option><option value="high">High</option></select></label>
+        <label class="field"><span>Category</span><select id="downloadCategory" name="category"><option value="auto" selected>Auto detect</option><option value="video">Video</option><option value="documents">Documents</option><option value="archives">Archives</option><option value="software">Software</option><option value="other">Other</option></select></label>
+        <label class="field"><span>Speed limit <em>optional</em></span><div class="input-suffix"><input id="downloadSpeedLimit" name="speedLimit" type="number" min="0" step="0.1" placeholder="Unlimited"><span>MB/s</span></div></label>
+        <div class="field full-span schedule-group">
+          <label class="switch-line"><span><strong>Schedule for later</strong><small>Keep the download queued until a specific time.</small></span><input id="scheduleEnabled" type="checkbox" role="switch"><i aria-hidden="true"></i></label>
+          <label class="field schedule-field" id="scheduleField" hidden><span>Start time</span><input id="downloadSchedule" name="scheduleAt" type="datetime-local"></label>
+        </div>
+        <details class="advanced-fields full-span">
+          <summary><span><svg><use href="#icon-shield"></use></svg> Integrity check</span><small>Optional</small></summary>
+          <label class="field"><span>Expected SHA-256</span><input id="downloadSha256" name="sha256" type="text" minlength="64" maxlength="64" pattern="[A-Fa-f0-9]{64}" placeholder="64-character checksum"><small>Flux will verify the finished file against this checksum.</small></label>
+        </details>
+      </div>
+      <footer class="modal-footer"><p><svg><use href="#icon-shield"></use></svg> Saved locally. Nothing leaves this device.</p><div><button class="secondary-button modal-close" type="button" data-close-dialog="addDialog">Cancel</button><button class="primary-button" id="submitDownloadButton" type="submit"><svg><use href="#icon-download"></use></svg><span>Start download</span></button></div></footer>
+    </form>
+  </dialog>
+
+  <dialog class="modal settings-modal" id="settingsDialog" aria-labelledby="settingsDialogTitle">
+    <form id="settingsForm">
+      <header class="modal-header">
+        <div class="modal-title-block"><span class="modal-icon"><svg><use href="#icon-settings"></use></svg></span><div><p class="eyebrow">Preferences</p><h2 id="settingsDialogTitle">Flux settings</h2><p>Tune performance, automation, and appearance.</p></div></div>
+        <button class="icon-button modal-close" type="button" data-close-dialog="settingsDialog" aria-label="Close"><svg><use href="#icon-x"></use></svg></button>
+      </header>
+      <div class="modal-body settings-sections">
+        <section><h3>Downloads</h3><div class="form-grid">
+          <label class="field"><span>Maximum concurrent downloads</span><input id="settingMaxConcurrent" name="maxConcurrent" type="number" min="1" max="20" required></label>
+          <label class="field"><span>Default connections</span><select id="settingDefaultConnections" name="defaultConnections"><option>1</option><option>2</option><option>4</option><option>8</option><option>16</option></select></label>
+          <label class="field full-span"><span>Default download folder</span><div class="joined-input"><input id="settingDownloadFolder" name="downloadFolder" type="text" required><button id="pickSettingsFolderButton" class="quiet-button" type="button"><svg><use href="#icon-folder"></use></svg><span>Choose</span></button></div></label>
+          <label class="field"><span>Global speed limit</span><div class="input-suffix"><input id="settingSpeedLimit" name="speedLimit" type="number" min="0" step="0.1"><span>MB/s</span></div><small>Use 0 for unlimited.</small></label>
+          <label class="field"><span>Theme</span><select id="settingTheme" name="theme"><option value="dark">Dark</option><option value="light">Light</option><option value="system">Follow system</option></select></label>
+        </div></section>
+        <section><h3>Automation</h3>
+          <label class="switch-line"><span><strong>Desktop notifications</strong><small>Notify me when a download finishes or fails.</small></span><input id="settingNotifications" name="notifications" type="checkbox" role="switch"><i aria-hidden="true"></i></label>
+          <label class="switch-line"><span><strong>Resume on launch</strong><small>Automatically continue interrupted downloads when Flux starts.</small></span><input id="settingAutoResume" name="autoResume" type="checkbox" role="switch"><i aria-hidden="true"></i></label>
+        </section>
+        <section><h3>Browser capture</h3>
+          <div class="browser-capture-card">
+            <span class="capture-mark"><svg><use href="#icon-download"></use></svg></span>
+            <div><strong>Take over files larger than 6 GB</strong><small>One extension works with Edge, Chrome, Opera, Brave, and other Chromium browsers. Smaller downloads stay in the browser.</small></div>
+            <button class="quiet-button" id="setupBrowserCaptureButton" type="button"><svg><use href="#icon-external"></use></svg><span>Set up</span></button>
+          </div>
+        </section>
+      </div>
+      <footer class="modal-footer"><p id="settingsStatus">Changes apply immediately.</p><div><button class="secondary-button modal-close" type="button" data-close-dialog="settingsDialog">Cancel</button><button class="primary-button" id="saveSettingsButton" type="submit"><svg><use href="#icon-check"></use></svg><span>Save settings</span></button></div></footer>
+    </form>
+  </dialog>
+
+  <dialog class="modal confirm-modal" id="confirmDialog" aria-labelledby="confirmTitle">
+    <div class="confirm-body"><span class="confirm-icon"><svg><use href="#icon-info"></use></svg></span><div><h2 id="confirmTitle">Are you sure?</h2><p id="confirmMessage">This action cannot be undone.</p><label class="check-line" id="confirmOption" hidden><input id="confirmCheckbox" type="checkbox"><span id="confirmOptionLabel">Also delete downloaded files</span></label></div></div>
+    <footer class="modal-footer"><span></span><div><button class="secondary-button" id="confirmCancel" type="button">Cancel</button><button class="danger-button" id="confirmAccept" type="button">Confirm</button></div></footer>
+  </dialog>
+
+  <dialog class="modal shortcuts-modal" id="shortcutsDialog" aria-labelledby="shortcutsTitle">
+    <header class="modal-header"><div><p class="eyebrow">Quick control</p><h2 id="shortcutsTitle">Keyboard shortcuts</h2></div><button class="icon-button modal-close" type="button" data-close-dialog="shortcutsDialog" aria-label="Close"><svg><use href="#icon-x"></use></svg></button></header>
+    <div class="shortcut-list"><div><span>Add a download</span><kbd>Ctrl</kbd><b>+</b><kbd>N</kbd></div><div><span>Search downloads</span><kbd>Ctrl</kbd><b>+</b><kbd>K</kbd></div><div><span>Pause or resume selected</span><kbd>Space</kbd></div><div><span>Open selected details</span><kbd>Enter</kbd></div><div><span>Close panel or dialog</span><kbd>Esc</kbd></div><div><span>Show shortcuts</span><kbd>?</kbd></div></div>
+  </dialog>
+
+  <div class="toast-region" id="toastRegion" role="region" aria-label="Notifications" aria-live="polite"></div>
+  <div class="sr-only" id="liveRegion" aria-live="polite" aria-atomic="true"></div>
+  <script src="/app.js" defer></script>
+</body>
+</html>
