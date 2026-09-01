@@ -59,9 +59,9 @@
 
 ## Download the Windows app
 
-Most people should download **Flux Download Manager Setup 1.0.0.exe** from the [latest GitHub release](https://github.com/standrew0x/flux-download-manager/releases/latest). It installs Flux, adds Start menu and desktop shortcuts, and does not require Node.js.
+Most people should download **Flux-Download-Manager-1.0.0-x64-setup.exe** from the [latest GitHub release](https://github.com/standrew0x/flux-download-manager/releases/latest). It installs Flux, adds Start menu and desktop shortcuts, and does not require Node.js.
 
-The release also includes **Flux Download Manager 1.0.0.exe**, a portable version that can run without installation. Flux copies its browser extension into the stable per-user data folder automatically, so the portable executable can be moved later without breaking browser capture.
+The release also includes **Flux-Download-Manager-1.0.0-x64-portable.exe**, a portable version that can run without installation. Flux copies its browser extension into the stable per-user data folder automatically, so the portable executable can be moved later without breaking browser capture.
 
 Flux is currently an unsigned community build. Windows SmartScreen may show an “unrecognized app” warning; inspect the public source and the release's **SHA256SUMS.txt** file before choosing **More info → Run anyway**. Code signing is planned for a future release.
 
