@@ -3,14 +3,71 @@
   "version": "1.0.0",
   "private": true,
   "description": "A local-first desktop download manager powered by Node.js.",
+  "author": "standrew0x",
   "type": "module",
-  "main": "server.js",
+  "main": "electron-main.js",
   "scripts": {
     "start": "node server.js --open",
     "dev": "node --watch server.js",
-    "test": "node --test"
+    "desktop": "electron .",
+    "test": "node --test",
+    "build:win": "electron-builder --win nsis portable --x64",
+    "build:dir": "electron-builder --dir --win --x64"
   },
   "engines": {
     "node": ">=24"
+  },
+  "devDependencies": {
+    "electron": "^44.1.0",
+    "electron-builder": "^26.15.3"
+  },
+  "build": {
+    "appId": "com.standrew0x.flux",
+    "productName": "Flux Download Manager",
+    "asar": true,
+    "files": [
+      "electron-main.js",
+      "server.js",
+      "build/icon.png",
+      "src/**/*",
+      "public/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "browser-extension",
+        "to": "browser-extension"
+      },
+      {
+        "from": "README.md",
+        "to": "README.md"
+      }
+    ],
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "icon": "build/icon.png",
+      "executableName": "Flux Download Manager",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        },
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Flux Download Manager",
+      "perMachine": false,
+      "deleteAppDataOnUninstall": false
+    }
   }
 }

@@ -57,26 +57,38 @@
 - State-changing requests are protected by origin checks
 - Sensitive URL credentials are redacted in the interface and logs
 
-## Quick start
+## Download the Windows app
 
-Requirements:
+Most people should download **Flux Download Manager Setup 1.0.0.exe** from the [latest GitHub release](https://github.com/standrew0x/flux-download-manager/releases/latest). It installs Flux, adds Start menu and desktop shortcuts, and does not require Node.js.
+
+The release also includes **Flux Download Manager 1.0.0.exe**, a portable version that can run without installation. Flux copies its browser extension into the stable per-user data folder automatically, so the portable executable can be moved later without breaking browser capture.
+
+Flux is currently an unsigned community build. Windows SmartScreen may show an “unrecognized app” warning; inspect the public source and the release's **SHA256SUMS.txt** file before choosing **More info → Run anyway**. Code signing is planned for a future release.
+
+When its window is closed, Flux stays in the system tray so active downloads continue. Use the tray menu to reopen or fully quit it.
+
+## Run from source
+
+Developer requirements:
 
 - Windows 10 or 11
 - Node.js 24 or newer
 - Microsoft Edge, Chrome, Opera, or another modern browser
 
-Clone the repository, then double-click **`Download Manager.cmd`**. Flux starts its local service and opens the dashboard in a desktop-style browser window. Active downloads continue if the window is closed.
+Clone the repository, then double-click **`Download Manager.cmd`**. Flux starts its local service and opens the dashboard in a desktop-style browser window.
 
 For development:
 
 ```powershell
 npm start
 npm test
+npm run desktop
+npm run build:win
 ```
 
 ## Enable automatic browser takeover
 
-1. Double-click **`Setup Browser Capture.cmd`**.
+1. Open Flux and choose **Set up browser capture** in Settings. When running from source, you can instead double-click **`Setup Browser Capture.cmd`**.
 2. Enable **Developer mode** on each browser's Extensions page.
 3. Choose **Load unpacked**.
 4. Select the repository's `browser-extension` folder.

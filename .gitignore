@@ -1,5 +1,8 @@
 # Node and local tooling
 node_modules/
+dist/
+release/
+out/
 npm-debug.log*
 *.log
 .env

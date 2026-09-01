@@ -15,6 +15,7 @@ const PORT = Number(process.env.FLUXDM_PORT) || 17652;
 const ORIGIN = `http://${HOST}:${PORT}`;
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
 const PUBLIC = path.join(ROOT, 'public');
+const EXTENSION_ROOT = process.env.FLUXDM_EXTENSION_ROOT || path.join(ROOT, 'browser-extension');
 const store = new DownloadStore({ defaultSettings: DEFAULT_SETTINGS });
 const engine = new DownloadEngine({ store });
 await engine.init();
@@ -46,7 +47,7 @@ function assertLocalMutation(req) {
   if (![`${HOST}:${PORT}`, `localhost:${PORT}`].includes(host)) throw Object.assign(new Error('Request host is not allowed'), { status:403 });
 }
 
-function systemInfo() { return { version:'1.0.0', platform:process.platform, downloadFolder:engine.getSettings().downloadFolder, stateFolder:store.rootDir, browserExtensionFolder:path.join(ROOT,'browser-extension') }; }
+function systemInfo() { return { version:'1.0.0', platform:process.platform, downloadFolder:engine.getSettings().downloadFolder, stateFolder:store.rootDir, browserExtensionFolder:EXTENSION_ROOT, desktopApp:process.env.FLUXDM_ELECTRON==='1' }; }
 
 async function openTarget(jobId, target) {
   const job = engine.list().find(item => item.id === jobId); if (!job) throw Object.assign(new Error('Download not found'), { status:404 });
@@ -74,7 +75,7 @@ function browserCandidates() {
 }
 
 async function openBrowserSetup() {
-  const extensionFolder = path.join(ROOT,'browser-extension');
+  const extensionFolder = EXTENSION_ROOT;
   for (const browser of browserCandidates()) spawn(browser.executable,[browser.page],{detached:true,stdio:'ignore'}).unref();
   if (process.platform === 'win32') spawn('explorer.exe',[extensionFolder],{detached:true,stdio:'ignore'}).unref();
   return { browsers:browserCandidates().map(item=>item.name), extensionFolder };
@@ -105,7 +106,7 @@ const server = http.createServer(async (req, res) => {
     }
     if (req.method === 'OPTIONS' && pathname.startsWith('/api/')) { res.writeHead(204,{...headers}); return res.end(); }
     if (req.method === 'GET' && pathname === '/api/health') return send(res,200,{ok:true, version:'1.0.0'});
-    if (req.method === 'GET' && pathname === '/api/browser/status') return send(res,200,{ok:true,minimumBytes:6*1024**3,extensionFolder:path.join(ROOT,'browser-extension')});
+    if (req.method === 'GET' && pathname === '/api/browser/status') return send(res,200,{ok:true,minimumBytes:6*1024**3,extensionFolder:EXTENSION_ROOT});
     if (req.method === 'GET' && pathname === '/api/bootstrap') return send(res,200,{jobs:engine.list(), settings:engine.getSettings(), system:systemInfo()});
     if (req.method === 'GET' && pathname === '/api/events') {
       res.writeHead(200,{...headers,'Content-Type':'text/event-stream','Cache-Control':'no-cache','Connection':'keep-alive'}); res.write(`event: snapshot\ndata: ${JSON.stringify({jobs:engine.list(),settings:engine.getSettings(),system:systemInfo()})}\n\n`); clients.add(res); req.on('close',()=>clients.delete(res)); return;
@@ -129,7 +130,14 @@ const server = http.createServer(async (req, res) => {
     if (req.method === 'POST' && pathname === '/api/system/open') { const input=await body(req); await openTarget(input.jobId,input.target); return send(res,200,{ok:true}); }
     if (req.method === 'POST' && pathname === '/api/system/pick-folder') return send(res,200,{path:await pickFolder()});
     if (req.method === 'POST' && pathname === '/api/system/browser-setup') return send(res,200,await openBrowserSetup());
-    if (req.method === 'POST' && pathname === '/api/system/shutdown') { send(res,200,{ok:true}); setTimeout(async()=>{await engine.shutdown();server.close(()=>process.exit(0));setTimeout(()=>process.exit(0),1500).unref();},100); return; }
+    if (req.method === 'POST' && pathname === '/api/system/shutdown') {
+      send(res,200,{ok:true});
+      setTimeout(async()=>{
+        if (process.env.FLUXDM_ELECTRON === '1') process.emit('flux:shutdown');
+        else { await shutdownFlux(); process.exit(0); }
+      },100);
+      return;
+    }
     if (pathname.startsWith('/api/')) return send(res,404,{error:'API route not found'});
     if (req.method === 'GET' || req.method === 'HEAD') return staticFile(req,res,pathname);
     send(res,405,{error:'Method not allowed'},{Allow:'GET, HEAD'});
@@ -150,8 +158,23 @@ async function openApp() {
 }
 
 server.once('error', error => {
+  if (error.code === 'EADDRINUSE' && process.env.FLUXDM_ELECTRON === '1') { console.warn(`Flux is already running at ${ORIGIN}`); return; }
   if (error.code === 'EADDRINUSE' && process.argv.includes('--open')) { openApp(); process.exit(0); }
   console.error(error); process.exit(1);
 });
 server.listen(PORT,HOST,()=>{ console.log(`Flux is running at ${ORIGIN}`); if(process.argv.includes('--open')) openApp(); });
-for (const signal of ['SIGINT','SIGTERM']) process.on(signal,async()=>{await engine.shutdown();server.close(()=>process.exit(0));});
+
+let shutdownPromise;
+export function shutdownFlux() {
+  if (shutdownPromise) return shutdownPromise;
+  shutdownPromise = (async()=>{
+    await engine.shutdown();
+    if (!server.listening) return;
+    await new Promise(resolve=>server.close(resolve));
+  })();
+  return shutdownPromise;
+}
+
+export { engine, ORIGIN, server };
+
+for (const signal of ['SIGINT','SIGTERM']) process.on(signal,async()=>{await shutdownFlux();process.exit(0);});
