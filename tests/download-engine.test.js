@@ -5,7 +5,7 @@ import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { DownloadStore } from '../src/store.js';
-import { DownloadEngine, DEFAULT_SETTINGS } from '../src/download-engine.js';
+import { DownloadEngine, DEFAULT_SETTINGS, normalizeDownloadUrl } from '../src/download-engine.js';
 
 const DATA = Buffer.alloc(10 * 1024 * 1024 + 211);
 for (let i = 0; i < DATA.length; i++) DATA[i] = i % 251;
@@ -13,6 +13,8 @@ for (let i = 0; i < DATA.length; i++) DATA[i] = i % 251;
 async function fixture({ slow = false } = {}) {
   const server = http.createServer((req, res) => {
     if (req.url === '/missing') { res.writeHead(404); res.end(); return; }
+    if (req.url === '/preview') { const page=Buffer.from('<!doctype html><title>Preview</title>');res.writeHead(200,{'Content-Type':'text/html; charset=utf-8','Content-Length':page.length});res.end(page);return; }
+    if (req.url === '/page.html') { const page=Buffer.from('<!doctype html><title>Real HTML file</title>');res.writeHead(200,{'Content-Type':'text/html; charset=utf-8','Content-Length':page.length});res.end(page);return; }
     const range = req.headers.range?.match(/^bytes=(\d+)-(\d*)$/);
     let start = range ? Number(range[1]) : 0, end = range?.[2] ? Number(range[2]) : DATA.length - 1;
     end = Math.min(end, DATA.length - 1); const chunk = DATA.subarray(start, end + 1);
@@ -52,4 +54,19 @@ test('pause preserves partial data and resume finishes the transfer', async t =>
 test('permanent HTTP errors fail without an infinite retry loop', async t => {
   const remote=await fixture();t.after(remote.close);const {root,engine}=await setup(t);await engine.add({url:`${remote.url}/missing`,destination:path.join(root,'downloads')});
   const failed=await waitFor(engine,j=>j.status==='failed');assert.match(failed.error,/HTTP 404/);assert.equal(failed.retries,0);
+});
+
+test('Dropbox preview links are normalized to direct downloads', () => {
+  const normalized=normalizeDownloadUrl('https://www.dropbox.com/scl/fi/example/video.mov?rlkey=secret&st=share&dl=0');
+  assert.equal(normalized.searchParams.get('dl'),'1');assert.equal(normalized.searchParams.get('rlkey'),'secret');assert.equal(normalized.searchParams.get('st'),'share');
+});
+
+test('HTML preview pages fail immediately instead of becoming fake downloads', async t => {
+  const remote=await fixture();t.after(remote.close);const {root,engine}=await setup(t);await engine.add({url:`${remote.url}/preview`,destination:path.join(root,'downloads'),filename:'video.mov'});
+  const failed=await waitFor(engine,j=>j.status==='failed');assert.match(failed.error,/HTML preview or error page/);assert.equal(failed.retries,0);await assert.rejects(readFile(failed.outputPath),{code:'ENOENT'});
+});
+
+test('explicit HTML files remain downloadable', async t => {
+  const remote=await fixture();t.after(remote.close);const {root,engine}=await setup(t);await engine.add({url:`${remote.url}/page.html`,destination:path.join(root,'downloads')});
+  const done=await waitFor(engine,j=>j.status==='complete');assert.match((await readFile(done.outputPath)).toString(),/Real HTML file/);
 });

@@ -13,6 +13,7 @@ const execFileAsync = promisify(execFile);
 const HOST = '127.0.0.1';
 const PORT = Number(process.env.FLUXDM_PORT) || 17652;
 const ORIGIN = `http://${HOST}:${PORT}`;
+const VERSION = '1.0.1';
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
 const PUBLIC = path.join(ROOT, 'public');
 const EXTENSION_ROOT = process.env.FLUXDM_EXTENSION_ROOT || path.join(ROOT, 'browser-extension');
@@ -47,7 +48,7 @@ function assertLocalMutation(req) {
   if (![`${HOST}:${PORT}`, `localhost:${PORT}`].includes(host)) throw Object.assign(new Error('Request host is not allowed'), { status:403 });
 }
 
-function systemInfo() { return { version:'1.0.0', platform:process.platform, downloadFolder:engine.getSettings().downloadFolder, stateFolder:store.rootDir, browserExtensionFolder:EXTENSION_ROOT, desktopApp:process.env.FLUXDM_ELECTRON==='1' }; }
+function systemInfo() { return { version:VERSION, platform:process.platform, downloadFolder:engine.getSettings().downloadFolder, stateFolder:store.rootDir, browserExtensionFolder:EXTENSION_ROOT, desktopApp:process.env.FLUXDM_ELECTRON==='1' }; }
 
 async function openTarget(jobId, target) {
   const job = engine.list().find(item => item.id === jobId); if (!job) throw Object.assign(new Error('Download not found'), { status:404 });
@@ -105,7 +106,7 @@ const server = http.createServer(async (req, res) => {
       res.setHeader('Access-Control-Allow-Headers','Content-Type'); res.setHeader('Access-Control-Allow-Methods','GET, POST, PATCH, DELETE, PUT, OPTIONS');
     }
     if (req.method === 'OPTIONS' && pathname.startsWith('/api/')) { res.writeHead(204,{...headers}); return res.end(); }
-    if (req.method === 'GET' && pathname === '/api/health') return send(res,200,{ok:true, version:'1.0.0'});
+    if (req.method === 'GET' && pathname === '/api/health') return send(res,200,{ok:true, version:VERSION});
     if (req.method === 'GET' && pathname === '/api/browser/status') return send(res,200,{ok:true,minimumBytes:6*1024**3,extensionFolder:EXTENSION_ROOT});
     if (req.method === 'GET' && pathname === '/api/bootstrap') return send(res,200,{jobs:engine.list(), settings:engine.getSettings(), system:systemInfo()});
     if (req.method === 'GET' && pathname === '/api/events') {

@@ -32,11 +32,29 @@ class HttpError extends Error {
 }
 
 class RangeRejected extends Error {}
+class InvalidDownloadResponse extends Error {
+  constructor(message) {
+    super(message);
+    this.retryable = false;
+  }
+}
 
 const iso = () => new Date().toISOString();
 const clone = value => structuredClone(value);
 const exists = async value => access(value).then(() => true, () => false);
 const cleanName = value => String(value || '').replace(/[<>:"/\\|?*\x00-\x1f]/g, '_').replace(/[. ]+$/g, '').trim().slice(0, 220) || 'download.bin';
+
+export function normalizeDownloadUrl(value) {
+  const url = value instanceof URL ? new URL(value) : new URL(String(value));
+  const hostname = url.hostname.toLowerCase();
+  const dropboxShare = (hostname === 'dropbox.com' || hostname.endsWith('.dropbox.com'))
+    && (/^\/s\//i.test(url.pathname) || /^\/scl\/fi\//i.test(url.pathname));
+  if (dropboxShare) {
+    url.searchParams.delete('raw');
+    url.searchParams.set('dl', '1');
+  }
+  return url;
+}
 
 function redactUrl(value) {
   try {
@@ -84,6 +102,18 @@ function classifyCategory(filename) {
   if (['.zip','.rar','.7z','.tar','.gz','.bz2','.xz'].includes(ext)) return 'archives';
   if (['.exe','.msi','.dmg','.pkg','.apk','.iso'].includes(ext)) return 'software';
   return 'other';
+}
+
+function validateDownloadResponse(response, job) {
+  const contentType = String(response.headers.get('content-type') || '').toLowerCase().split(';',1)[0].trim();
+  if (!['text/html','application/xhtml+xml'].includes(contentType)) return;
+  const disposition = String(response.headers.get('content-disposition') || '');
+  const responseName = filenameFromHeaders(response.headers,response.url);
+  const requestedExtension = path.extname(job.filename || '').toLowerCase();
+  const responseExtension = path.extname(responseName).toLowerCase();
+  const explicitHtml = ['.html','.htm','.xhtml'].includes(requestedExtension) || ['.html','.htm','.xhtml'].includes(responseExtension);
+  if (/\battachment\b/i.test(disposition) || explicitHtml) return;
+  throw new InvalidDownloadResponse('The server returned an HTML preview or error page instead of the requested file. Use a direct download link or retry through the browser.');
 }
 
 function abortError() { return new DOMException('Download interrupted', 'AbortError'); }
@@ -144,6 +174,9 @@ export class DownloadEngine extends EventEmitter {
     let parsed;
     try { parsed = new URL(String(spec.url || '')); } catch { throw new TypeError('Enter a valid HTTP or HTTPS URL'); }
     if (!['http:', 'https:'].includes(parsed.protocol)) throw new TypeError('Only HTTP and HTTPS downloads are supported');
+    const originalUrl = parsed.toString();
+    parsed = normalizeDownloadUrl(parsed);
+    const normalizedUrl = parsed.toString() !== originalUrl;
     const directory = path.resolve(String(spec.destination || spec.directory || this.settings.downloadFolder));
     await mkdir(directory, { recursive: true });
     const automaticName = !String(spec.filename || '').trim();
@@ -166,6 +199,7 @@ export class DownloadEngine extends EventEmitter {
       error: null, events: [],
     };
     this.#event(job, 'info', job.status === 'scheduled' ? `Scheduled for ${new Date(scheduledAt).toLocaleString()}` : job.source === 'browser' ? `Captured from ${job.browserName || 'browser'}` : 'Added to the queue');
+    if (normalizedUrl) this.#event(job,'info','Converted Dropbox preview link to a direct download');
     this.jobs.set(id, job); await this.store.save(job); this.#broadcast(); this.#pump();
     return clone(job);
   }
@@ -278,6 +312,8 @@ export class DownloadEngine extends EventEmitter {
   async #probe(job, signal) {
     const response = await fetch(job.url, { headers: { 'User-Agent': 'Flux/1.0', ...job._requestHeaders, Range: 'bytes=0-0' }, redirect: 'follow', signal });
     if (!response.ok) throw this.#httpError(response);
+    try { validateDownloadResponse(response,job); }
+    catch (error) { await response.body?.cancel(); throw error; }
     const range = parseContentRange(response.headers.get('content-range'));
     const supportsRanges = response.status === 206 && Boolean(range);
     const totalBytes = supportsRanges ? range.total : Number(response.headers.get('content-length')) || null;
@@ -299,7 +335,7 @@ export class DownloadEngine extends EventEmitter {
       catch (error) {
         if (error?.name === 'AbortError' || error instanceof RangeRejected) throw error;
         attempt += 1;
-        if (error instanceof HttpError && !error.retryable) throw error;
+        if (error?.retryable === false || (error instanceof HttpError && !error.retryable)) throw error;
         if (attempt > this.settings.maxRetries) throw new Error(`Retry limit reached: ${error.message}`);
         job.retries += 1; const delay = error.retryAfter || Math.min(30000, 700 * 2 ** (attempt - 1) + Math.random() * 400);
         this.#event(job, 'warning', `Retry ${attempt}/${this.settings.maxRetries} in ${Math.ceil(delay/1000)}s — ${error.message}`); await this.#save(job, true); await sleep(delay, signal);
@@ -326,6 +362,8 @@ export class DownloadEngine extends EventEmitter {
       if (current > expected) { await truncate(file, 0); current = 0; progress[index] = 0; }
       const requested = start + current;
       const response = await fetch(job.finalUrl || job.url, { headers: this.#rangeHeaders(job, requested, end), signal });
+      try { validateDownloadResponse(response,job); }
+      catch (error) { await response.body?.cancel(); throw error; }
       if (response.status !== 206) { await response.body?.cancel(); throw new RangeRejected('Server stopped honoring byte ranges'); }
       const range = parseContentRange(response.headers.get('content-range'));
       if (!range || range.start !== requested || range.end !== end || range.total !== job.totalBytes) { await response.body?.cancel(); throw new RangeRejected('Server returned an invalid byte range'); }
@@ -348,6 +386,8 @@ export class DownloadEngine extends EventEmitter {
       if (existing) { headers.Range = `bytes=${existing}-`; if (job.etag || job.lastModified) headers['If-Range'] = job.etag || job.lastModified; }
       const response = await fetch(job.finalUrl || job.url, { headers, signal });
       if (!response.ok) throw this.#httpError(response);
+      try { validateDownloadResponse(response,job); }
+      catch (error) { await response.body?.cancel(); throw error; }
       let append = existing > 0 && response.status === 206;
       if (append) { const range = parseContentRange(response.headers.get('content-range')); if (!range || range.start !== existing || (job.totalBytes && range.total !== job.totalBytes)) throw new RangeRejected('Resume validator changed; restarting safely'); }
       if (!append) { await truncate(partial, 0).catch(()=>{}); existing = 0; job.downloadedBytes = 0; }
